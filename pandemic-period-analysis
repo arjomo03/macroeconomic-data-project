@@ -1,0 +1,54 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def fetch_fred_series(series_id):
+    """
+    fetch time series from FRED as a pandas DataFrame.
+    """
+    url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
+    df = pd.read_csv(url, parse_dates=[0], index_col=0)
+    df.columns = [series_id]
+    return df
+
+
+def main():
+    # fetch corporate bond yields and FFR, then compute spread
+    series_ids = ['AAA', 'BAA', 'FEDFUNDS']
+    series_names = ['AAA', 'BAA', 'FFR']
+
+    df_list = [fetch_fred_series(sid) for sid in series_ids]
+    df_rates = pd.concat(df_list, axis=1)
+    df_rates.columns = series_names
+    df_rates['Spread'] = df_rates['BAA'] - df_rates['AAA']
+
+    # determine available date range
+    start, end = df_rates.index.min(), df_rates.index.max()
+
+    # fetch UNRATE and CPI
+    df_unrate = fetch_fred_series('UNRATE')
+    df_unrate.columns = ['Unemployment Rate']
+
+    df_cpi = fetch_fred_series('CPIAUCSL')
+    df_cpi.columns = ['CPIAUCSL']
+    df_cpi['Inflation Rate'] = np.log(df_cpi['CPIAUCSL'] / df_cpi['CPIAUCSL'].shift(12)) * 100
+
+    # merge and filter for pandemic period (2018 onward)
+    master = pd.concat([df_rates['Spread'].loc[start:end], df_unrate['Unemployment Rate'].loc[start:end], df_cpi['Inflation Rate'].loc[start:end]], axis=1).dropna()
+
+    covid = master.loc['2018-01-01':]
+    if covid.empty:
+        print("No data from 2018 onward. Please check availability.")
+        return
+
+    # plot pandemic-period comparison
+    ax = covid.plot(title="Corporate Spread, Unemployment, & Inflation in the U.S. (2018–Present)", figsize=(10, 6))
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Value / %")
+    plt.tight_layout()
+    plt.show()
+
+
+if __name__ == '__main__':
+    main()
