@@ -1,0 +1,40 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+def fetch_fred_series(series_id):
+    """
+    fetch a time series from FRED as a pandas DataFrame.
+    """
+    url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
+    # Parse the first column as dates and set it as index, regardless of column name
+    df = pd.read_csv(url, parse_dates=[0], index_col=0)
+    # Rename the data column to the series ID
+    df.columns = [series_id]
+    return df
+
+
+def main():
+    # specify FRED series IDs and desired output column names
+    series_ids = ['AAA', 'BAA', 'FEDFUNDS']
+    series_names = ['AAA', 'BAA', 'FFR']
+
+    # fetch each series and combine into one DataFrame
+    df_list = [fetch_fred_series(sid) for sid in series_ids]
+    df_rates = pd.concat(df_list, axis=1)
+    df_rates.columns = series_names
+
+    # plot AAA, BAA, & Fed Funds Rate
+    ax = df_rates.plot(y=series_names, title="AAA, BAA, & Fed Funds Rate (Monthly)", figsize=(10, 6))
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Yield / %")
+    plt.tight_layout()
+    plt.show()
+
+    # descriptive statistics
+    desc = df_rates.describe().T
+    print("Descriptive Statistics:\n", desc)
+
+
+if __name__ == "__main__":
+    main()
