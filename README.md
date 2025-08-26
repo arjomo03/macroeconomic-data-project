@@ -1,5 +1,5 @@
 # macroeconomic-data-project
-
+## Summary
 Investigating the difference between safe and risky corporate borrowing rates may inform us about recessions. In this project, I obtained monthly data on two U.S. bond yields, Moody’s Aaa rate and Moody’s Baa rate, and calculated the interest rate spread between them. I combined the spreads' monthly figures with unemployment, industrial production, consumer prices, and the Federal Funds Reserve’s (FFR) main policy rate, creating a timeline from their earliest dates to December 2024. All data came from the Federal Reserve’s Economic Database (FRED), ensuring credibility and reproducibility.
 
 Using regression analysis, I tested how each economic factor affects the spread. I also added an indicator for the 2007 to 2009 Great Recession to see whether that extreme episode altered the usual relationships.
